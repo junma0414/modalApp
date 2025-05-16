@@ -1,11 +1,7 @@
 
 import modal
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import Union, List, Optional
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
+    
 app = modal.App("distill_model_v1")
 
 volume = modal.Volume.from_name("llm-models")
