@@ -1,0 +1,40 @@
+name: Stop and Deploy Modal Script
+
+on:
+  workflow_dispatch:
+    inputs:
+      script_name:
+        description: 'Path to the Python script to deploy (e.g., scripts/my_model.py)'
+        required: true
+      app_name:
+        description: 'Name of the Modal App to stop before deploying'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Modal
+        run: pip install modal
+
+      - name: Stop Existing Modal App
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: |
+          echo "Stopping app: ${{ github.event.inputs.app_name }}"
+          modal stop ${{ github.event.inputs.app_name }} || echo "App not running or already stopped"
+
+      - name: Deploy Modal App
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: modal deploy ${{ github.event.inputs.script_name }}
