@@ -1,10 +1,10 @@
 
 import modal
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import Union, List, Optional
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+#from fastapi import FastAPI
+#from pydantic import BaseModel
+#from typing import Union, List, Optional
+#import torch
+#from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 app = modal.App("distill_model_v1")
 
@@ -20,6 +20,11 @@ image = modal.Image.debian_slim().pip_install(
 @app.function(image=image, volumes={"/model": volume}, gpu="A10G", timeout=600)
 @modal.asgi_app()
 def fastapi_app():
+    from fastapi import FastAPI
+    from pydantic import BaseModel
+    from typing import Union, List, Optional
+    import torch
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification
     model_path = "/model/distill_model"
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSequenceClassification.from_pretrained(model_path).to("cuda")
