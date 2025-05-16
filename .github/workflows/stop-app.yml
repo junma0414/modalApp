@@ -1,0 +1,29 @@
+name: Stop Modal App
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'Name of the Modal App to stop'
+        required: true
+
+jobs:
+  stop:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Modal
+        run: pip install modal
+
+      - name: Stop Modal App
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: |
+          echo "Stopping Modal App: ${{ github.event.inputs.app_name }}"
+          modal stop ${{ github.event.inputs.app_name }} || echo "No such app running"
