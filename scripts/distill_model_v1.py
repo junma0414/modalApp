@@ -1,10 +1,10 @@
 
 import modal
-#from fastapi import FastAPI
-#from pydantic import BaseModel
-#from typing import Union, List, Optional
-#import torch
-#from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Union, List, Optional
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 app = modal.App("distill_model_v1")
 
@@ -17,17 +17,19 @@ image = modal.Image.debian_slim().pip_install(
     "pydantic"
 )
 
+
 @app.function(image=image, volumes={"/model": volume}, gpu="A10G", timeout=600)
 @modal.asgi_app()
 def fastapi_app():
-    from fastapi import FastAPI
-    from pydantic import BaseModel
-    from typing import Union, List, Optional
-    import torch
-    from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Union, List, Optional
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
     model_path = "/model/distill_model"
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSequenceClassification.from_pretrained(model_path).to("cuda")
+
 
     web_app = FastAPI()
 
@@ -46,6 +48,11 @@ def fastapi_app():
         texts = req.input_text if isinstance(req.input_text, list) else [req.input_text]
         inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512).to("cuda")
         outputs = model(**inputs)
+        
+        if req.return_probs:
+            probs = torch.softmax(outputs.logits, dim=-1)
+            return {"predictions": probs.tolist()}
+    
         predictions = outputs.logits.argmax(dim=-1).tolist()
         return {"predictions": predictions}
     
