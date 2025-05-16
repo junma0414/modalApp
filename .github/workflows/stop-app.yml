@@ -26,4 +26,4 @@ jobs:
           MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
         run: |
           echo "Stopping Modal App: ${{ github.event.inputs.app_name }}"
-          modal stop ${{ github.event.inputs.app_name }} || echo "No such app running"
+          modal app stop ${{ github.event.inputs.app_name }} || echo "No such app running"
